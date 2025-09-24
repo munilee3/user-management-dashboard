@@ -17,7 +17,6 @@ function useFetchUsers() {
       })
       .then((data) => {
         if (!mounted) return;
-        // Normalize: split name into first/last, set department
         const normalized = data.map((u) => {
           const [first = '', ...rest] = (u.name || '').split(' ');
           const last = rest.join(' ');
@@ -48,14 +47,12 @@ function useFetchUsers() {
 }
 
 function validateEmail(email) {
-  // Simple RFC-ish check
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 export default function App() {
   const { users, setUsers, loading, error } = useFetchUsers();
 
-  // UI state
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [query, setQuery] = useState('');
@@ -63,19 +60,16 @@ export default function App() {
   const [filterValues, setFilterValues] = useState({ firstName: '', lastName: '', email: '', department: '' });
   const [sortBy, setSortBy] = useState({ column: 'id', dir: 'asc' });
 
-  // Modal / form state
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null); // null => add
+  const [editingUser, setEditingUser] = useState(null);
   const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', department: '' });
   const [formErrors, setFormErrors] = useState({});
   const [apiMessage, setApiMessage] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  // Derived: filtered & sorted users
   const processed = useMemo(() => {
     let list = [...users];
 
-    // Global search (checks first/last/email/department)
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter((u) =>
@@ -83,7 +77,6 @@ export default function App() {
       );
     }
 
-    // Filters
     if (filterValues.firstName) {
       list = list.filter((u) => u.firstName.toLowerCase().includes(filterValues.firstName.toLowerCase()));
     }
@@ -97,7 +90,6 @@ export default function App() {
       list = list.filter((u) => u.department.toLowerCase().includes(filterValues.department.toLowerCase()));
     }
 
-    // Sorting
     list.sort((a, b) => {
       const col = sortBy.column;
       if(col === 'id') {
@@ -117,7 +109,6 @@ export default function App() {
     return list;
   }, [users, query, filterValues, sortBy]);
 
-  // Pagination
   const total = processed.length;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   useEffect(() => {
@@ -125,7 +116,6 @@ export default function App() {
   }, [totalPages]);
   const paged = useMemo(() => processed.slice((page - 1) * perPage, page * perPage), [processed, page, perPage]);
 
-  // Handlers
   function openAdd() {
     setEditingUser(null);
     setFormState({ firstName: '', lastName: '', email: '', department: '' });
@@ -165,7 +155,6 @@ export default function App() {
     setApiMessage(null);
     try {
       if (editingUser) {
-        // PUT
         const res = await fetch(`${API_BASE}/${editingUser.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -173,11 +162,9 @@ export default function App() {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const updated = await res.json();
-        // Update local list (JSONPlaceholder returns the object back)
         setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? { ...u, ...formState } : u)));
         setApiMessage('User updated (simulated)');
       } else {
-        // POST
         const res = await fetch(API_BASE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -185,7 +172,6 @@ export default function App() {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const created = await res.json();
-        // JSONPlaceholder responds with an id; append to local list
         const newId = created.id ?? Date.now();
         setUsers((prev) => [{ id: newId, ...formState }, ...prev]);
         setApiMessage('User added (simulated)');
@@ -307,8 +293,6 @@ export default function App() {
               </tbody>
             </table>
           </div>
-
-          {/* Pagination controls */}
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">Page {page} of {totalPages}</div>
             <div className="flex items-center gap-2">
@@ -317,8 +301,6 @@ export default function App() {
             </div>
           </div>
         </section>
-
-        {/* Modal */}
         {modalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
             <div className="bg-white rounded shadow-lg w-full max-w-lg p-4">
