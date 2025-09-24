@@ -163,7 +163,7 @@ export default function App() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const updated = await res.json();
         setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? { ...u, ...formState } : u)));
-        setApiMessage('User updated (simulated)');
+        setApiMessage('User details updated');
       } else {
         const res = await fetch(API_BASE, {
           method: 'POST',
@@ -174,7 +174,7 @@ export default function App() {
         const created = await res.json();
         const newId = created.id ?? Date.now();
         setUsers((prev) => [{ id: newId, ...formState }, ...prev]);
-        setApiMessage('User added (simulated)');
+        setApiMessage('New user added');
       }
       closeModal();
     } catch (err) {
@@ -195,7 +195,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/${user.id}`, { method: 'DELETE' });
       if (!res.ok && res.status !== 200 && res.status !== 204) throw new Error(`HTTP ${res.status}`);
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      setApiMessage('User deleted (simulated)');
+      setApiMessage('User deleted');
     } catch (err) {
       setApiMessage(`API error: ${err.message}`);
     } finally {
